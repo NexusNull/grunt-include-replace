@@ -16,7 +16,7 @@
     "tasks"
   ],
   "scripts": {
-    "test": "standard && grunt"
+    "test": "grunt"
   },
   "main": "tasks/includereplace.js",
   "keywords": [
@@ -32,8 +32,7 @@
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-contrib-clean": "^1.0.0",
-    "grunt-contrib-nodeunit": "^1.0.0",
-    "standard": "^7.1.2"
+    "grunt-contrib-nodeunit": "^1.0.0"
   },
   "peerDependencies": {
     "grunt": "~0.4.4 || ^1.0.1"
