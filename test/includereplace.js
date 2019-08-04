@@ -28,7 +28,10 @@ exports.suite = {
       'regexp/index.html',
       'regexsafeprefixsuffix/index.js',
       'types/test.js',
-      'copyFileToFile/index.production.html'
+      'copyFileToFile/index.production.html',
+      'minitaskQuoteEscape/test.txt',
+      'minitaskRemoveLineBreaks/test.txt',
+      'minitaskWrapQuotes/test.txt'
     ]
 
     // Files not expected to exist after execution

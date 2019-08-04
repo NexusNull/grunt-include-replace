@@ -159,6 +159,18 @@ module.exports = function (grunt) {
       copyFileToFile: {
         src: 'test/files/copyFileToFile/index.html',
         dest: 'dist/copyFileToFile/index.production.html'
+      },
+      minitaskQuoteEscape:{
+        src: 'test/files/minitaskQuoteEscape/test.txt',
+        dest: 'dist/minitaskQuoteEscape/test.txt'
+      },
+      minitaskRemoveLineBreaks:{
+        src: 'test/files/minitaskRemoveLineBreaks/test.txt',
+        dest: 'dist/minitaskRemoveLineBreaks/test.txt'
+      },
+      minitaskAddQuotes:{
+        src: 'test/files/minitaskWrapQuotes/test.txt',
+        dest: 'dist/minitaskWrapQuotes/test.txt'
       }
     // TODO: Test me:
     // lodash templates in global and local vars

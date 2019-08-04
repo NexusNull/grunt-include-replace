@@ -71,7 +71,7 @@ module.exports = function (grunt) {
             return contents
         }
 
-        var includeRegExp = new RegExp(options.prefix + 'include\\(\\s*["\'](.*?)["\'](?:(?:,\\s*({[\\s\\S]*?}|null|undefined))\\s*(?:,\\s*({[\\s\\S]*?}))?)?\\s*\\)' + options.suffix);
+        var includeRegExp = new RegExp(options.prefix + 'include\\(\\s*["\'](.*?)["\'](?:,\\s*({[\\s\\S]*?})\\s*(?:,\\s*(\\[[\\s\\S]*?\\]))?)?\\s*\\)' + options.suffix);
 
         function include(contents, workingDir) {
             var matches = includeRegExp.exec(contents)
@@ -144,16 +144,19 @@ module.exports = function (grunt) {
                 for(var task of tasks){
                     switch (task.type) {
                         case "quote_escape":
-                            includeContents = includeContents.replace("\"","\\\"").replace("\'","\\\'");
+                            includeContents = includeContents.replace(/"/g,"\\\"").replace(/'/g,"\\'");
                             break;
                         case "remove_line_breaks":
-                            includeContents = includeContents.replace("\n","");
+                            includeContents = includeContents.replace(/(?:\n|\r)/g,"");
+                            break;
+                        case "wrap_quotes":
+                            includeContents = "\""+includeContents+"\"";
                             break;
                         default:
                             throw new Error("Unknown task type");
                     }
                 }
-                contents = contents.replace(match, createReplaceFn(includeContents))
+                contents = contents.replace(match, createReplaceFn(includeContents));
 
                 matches = includeRegExp.exec(contents)
             }
@@ -161,7 +164,7 @@ module.exports = function (grunt) {
             return contents
         }
 
-        var count = 0
+        var count = 0;
         this.files.forEach(function (config) {
             // Warn if source files aren't found
             config.orig.src.forEach(function (src) {
