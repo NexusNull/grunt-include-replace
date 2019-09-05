@@ -70,7 +70,7 @@ module.exports = function (grunt) {
 
             return contents
         }
-
+        var tryRegExp = new RegExp(options.prefix + 'try\\(\\s*["\'](.*?)["\'](?:,\\s*["\'](.*?)["\']\\s*(?:,\\s*["\'](.*?)["\'])?)?\\s*\\)\\n(.*?)\\n' + options.suffix);
         var includeRegExp = new RegExp(options.prefix + 'include\\(\\s*["\'](.*?)["\'](?:,\\s*({[\\s\\S]*?})\\s*(?:,\\s*(\\[[\\s\\S]*?\\]))?)?\\s*\\)' + options.suffix);
 
         function include(contents, workingDir) {
@@ -164,6 +164,29 @@ module.exports = function (grunt) {
             return contents
         }
 
+        function replaceTry(contents){
+            var matches = tryRegExp.exec(contents);
+
+            // Create a function that can be passed to String.replace as the second arg
+            function createReplaceFn(replacement) {
+                return function () {
+                    return replacement
+                }
+            }
+
+            while (matches) {
+                var match = matches[0];
+                var errorMessage = matches[1];
+                var logLevel = matches[2] | "";
+                var catchExp =  matches[3] | "";
+                var exp =  matches[4] | "";
+
+                contents = contents.replace(match, "try{"+exp+"}\ncatch(err){log."+logLevel+"(\""+errorMessage+"\");\n"+catchExp+"}");
+
+            }
+
+            return contents
+        }
         var count = 0;
         this.files.forEach(function (config) {
             // Warn if source files aren't found
@@ -183,7 +206,7 @@ module.exports = function (grunt) {
                 if (!srcs.length) {
                     grunt.log.warn('Source file(s) not found', src)
                 }
-            })
+            });
 
             config.src.forEach(function (src) {
                 if (!grunt.file.isFile(src)) {
@@ -206,16 +229,18 @@ module.exports = function (grunt) {
                 // Process includes
                 contents = include(contents, path.dirname(src))
 
-                var dest = config.dest
+                contents = replaceTry(contents);
+
+                var dest = config.dest;
 
                 if (grunt.file.isDir(dest) && !config.orig.cwd) {
                     dest = path.join(dest, src)
                 }
 
-                count++
-                grunt.log.debug('Saving to', dest)
+                count++;
+                grunt.log.debug('Saving to', dest);
 
-                grunt.file.write(dest, contents)
+                grunt.file.write(dest, contents);
 
                 grunt.verbose.ok('Processed ' + src)
             })
