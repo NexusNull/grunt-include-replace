@@ -70,7 +70,7 @@ module.exports = function (grunt) {
 
             return contents
         }
-        var tryRegExp = new RegExp(options.prefix + 'try\\(\\s*["\'](.*?)["\'](?:,\\s*["\'](.*?)["\']\\s*(?:,\\s*["\'](.*?)["\'])?)?\\s*\\)\\n(.*?)\\n' + options.suffix);
+
         var includeRegExp = new RegExp(options.prefix + 'include\\(\\s*["\'](.*?)["\'](?:,\\s*({[\\s\\S]*?})\\s*(?:,\\s*(\\[[\\s\\S]*?\\]))?)?\\s*\\)' + options.suffix);
 
         function include(contents, workingDir) {
@@ -114,7 +114,7 @@ module.exports = function (grunt) {
                 var match = matches[0]
                 var includePath = matches[1]
                 var localVars = matches[2] ? JSON.parse(matches[2]) : {}
-                var tasks =  matches[3] ? JSON.parse(matches[3]) : []
+                var tasks = matches[3] ? JSON.parse(matches[3]) : []
 
                 if (!grunt.file.isPathAbsolute(includePath)) {
                     includePath = path.resolve(path.join((options.includesDir ? options.includesDir : workingDir), includePath))
@@ -141,16 +141,16 @@ module.exports = function (grunt) {
                 var includeContents = getIncludeContents(includePath, localVars);
 
 
-                for(var task of tasks){
+                for (var task of tasks) {
                     switch (task.type) {
                         case "quote_escape":
-                            includeContents = includeContents.replace(/"/g,"\\\"").replace(/'/g,"\\'");
+                            includeContents = includeContents.replace(/"/g, "\\\"").replace(/'/g, "\\'");
                             break;
                         case "remove_line_breaks":
-                            includeContents = includeContents.replace(/(?:\n|\r)/g,"");
+                            includeContents = includeContents.replace(/(?:\n|\r)/g, "");
                             break;
                         case "wrap_quotes":
-                            includeContents = "\""+includeContents+"\"";
+                            includeContents = "\"" + includeContents + "\"";
                             break;
                         default:
                             throw new Error("Unknown task type");
@@ -164,7 +164,8 @@ module.exports = function (grunt) {
             return contents
         }
 
-        function replaceTry(contents){
+        var tryRegExp = new RegExp(options.prefix + 'try\\(\\s*["\'](.*?)["\'](?:,\\s*["\'](.*?)["\']\\s*(?:,\\s*["\'](.*?)["\'](?:,\\s*["\'](.*?)["\']))?)?\\s*\\)\\n(.*?)\\n' + options.suffix);
+        function replaceTry(contents) {
             var matches = tryRegExp.exec(contents);
 
             // Create a function that can be passed to String.replace as the second arg
@@ -177,16 +178,17 @@ module.exports = function (grunt) {
             while (matches) {
                 var match = matches[0];
                 var errorMessage = matches[1];
-                var logLevel = matches[2] | "";
-                var catchExp =  matches[3] | "";
-                var exp =  matches[4] | "";
+                var logLevel = matches[2] || "";
+                var catchExp = matches[3] || "";
+                var exp = matches[4] || "";
 
-                contents = contents.replace(match, "try{"+exp+"}\ncatch(err){log."+logLevel+"(\""+errorMessage+"\");\n"+catchExp+"}");
-
+                contents = contents.replace(match, "try{" + exp + "}\ncatch(err){log." + logLevel + "(\"" + errorMessage + "\");\nlog." + logLevel + "(err);\n" + catchExp + "}");
+                matches = tryRegExp.exec(contents);
             }
 
             return contents
         }
+
         var count = 0;
         this.files.forEach(function (config) {
             // Warn if source files aren't found
