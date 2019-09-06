@@ -164,7 +164,7 @@ module.exports = function (grunt) {
             return contents
         }
 
-        var tryRegExp = new RegExp(options.prefix + 'try\\(\\s*["\'](.*?)["\'](?:,\\s*["\'](.*?)["\']\\s*(?:,\\s*["\'](.*?)["\'](?:,\\s*["\'](.*?)["\']))?)?\\s*\\)\\n(.*?)\\n' + options.suffix);
+        var tryRegExp = new RegExp(options.prefix + 'try\\("([^"]*)",\\s?"([^"]*)",\\s?"([^"]*)",\\s?"([^"]*)"\\)[\\n\\r]+(.*?)[\\n\\r]+' + options.suffix);
         function replaceTry(contents) {
             var matches = tryRegExp.exec(contents);
 
@@ -177,12 +177,24 @@ module.exports = function (grunt) {
 
             while (matches) {
                 var match = matches[0];
-                var errorMessage = matches[1];
-                var logLevel = matches[2] || "";
-                var catchExp = matches[3] || "";
-                var exp = matches[4] || "";
+                var moduleName = matches[1];
+                var errorMessage = matches[2];
+                var logLevel = matches[3] || "";
+                var catchExp = matches[4] || "";
+                var exp = matches[5] || "";
 
-                contents = contents.replace(match, "try{" + exp + "}\ncatch(err){log." + logLevel + "(\"" + errorMessage + "\");\nlog." + logLevel + "(err);\n" + catchExp + "}");
+                contents = contents.replace(match,
+                    "try{\n" +
+                    exp  +
+                    "}\n" +
+                    "catch(err){\n" +
+                    "log." + logLevel + "(\""+moduleName+"\",\"" + errorMessage + "\");\n" +
+                    "log." + logLevel + "(\""+moduleName+"\", err);\n" +
+                    catchExp +
+                    "}");
+
+
+
                 matches = tryRegExp.exec(contents);
             }
 
